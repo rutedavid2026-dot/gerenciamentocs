@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sami CS · Painel de Contas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+/* ─── Tokens ─── */
+:root {
+  --coral:   #FF5751;
+  --coral-l: #FF7974;
+  --coral-ll:#FFBCB9;
+  --coral-bg:#FFF2F2;
+  --red:     #C81F2A;
+  --red-dk:  #9A1820;
+  --green:   #4AAE97;
+  --blue:    #2F5EA8;
+  --ink:     #1a1a1a;
+  --ink-2:   #333333;
+  --muted:   #666666;
+  --subtle:  #999999;
+  --line:    #e8e8e8;
+  --bg:      #F7F7F7;
+  --white:   #ffffff;
+  --r:       10px;
+  --r-sm:    7px;
+  --shadow:  0 1px 3px rgba(0,0,0,.07), 0 4px 12px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;display:flex;font-size:14px}
+button,input,select,textarea{font-family:inherit;font-size:inherit}
+a{color:inherit;text-decoration:none}
+
+/* ─── Sidebar ─── */
+#sidebar{width:268px;flex:none;background:var(--ink-2);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.sb-header{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-brand{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.sb-logo{width:32px;height:32px;border-radius:8px;background:var(--coral);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff;flex:none}
+.sb-brand-text{font-weight:700;font-size:15px;color:#fff;line-height:1.2}
+.sb-brand-text small{display:block;font-size:10.5px;font-weight:500;color:rgba(255,255,255,.45);letter-spacing:.5px;text-transform:uppercase}
+.sb-search{position:relative;margin-bottom:8px}
+.sb-search input{width:100%;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-sm);padding:7px 10px 7px 30px;color:#fff;font-size:13px;outline:none;transition:background .15s,border-color .15s}
+.sb-search input::placeholder{color:rgba(255,255,255,.35)}
+.sb-search input:focus{background:rgba(255,255,255,.14);border-color:var(--coral)}
+.sb-search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.35);pointer-events:none}
+.sb-filter{display:flex;gap:5px}
+.sb-filter select{flex:1;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-sm);padding:6px 9px;color:rgba(255,255,255,.8);font-size:12px;font-weight:600;outline:none;cursor:pointer}
+.sb-filter select:focus{border-color:var(--coral)}
+.sb-filter select option{background:#333;color:#fff}
+.sb-section-label{padding:10px 16px 4px;font-size:10.5px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.7px;text-transform:uppercase}
+#companyList{flex:1;overflow-y:auto;padding:4px 8px 8px}
+#companyList::-webkit-scrollbar{width:4px}
+#companyList::-webkit-scrollbar-track{background:transparent}
+#companyList::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+.co-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--r-sm);cursor:pointer;transition:background .12s;margin-bottom:2px}
+.co-item:hover{background:rgba(255,255,255,.08)}
+.co-item.active{background:var(--coral)}
+.co-item.active .co-name,.co-item.active .co-sub,.co-item.active .co-badge{color:#fff}
+.co-item.active .co-badge{background:rgba(255,255,255,.25)}
+.co-avatar{width:32px;height:32px;border-radius:8px;flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff}
+.co-meta{flex:1;min-width:0}
+.co-name{font-size:13.5px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.co-sub{font-size:11.5px;color:rgba(255,255,255,.45);font-weight:500}
+.co-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;background:rgba(255,255,255,.12);color:rgba(255,255,255,.7)}
+.co-badge.ok{background:rgba(74,174,151,.25);color:#6fd4bb}
+.co-badge.warn{background:rgba(255,121,116,.2);color:#ff9a97}
+.co-badge.bad{background:rgba(200,31,42,.25);color:#ff7974}
+
+/* Sidebar nav */
+.sb-nav{padding:8px 8px 4px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-nav-btn{width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;background:none;border:none;color:rgba(255,255,255,.6);font-size:13px;font-weight:600;border-radius:var(--r-sm);cursor:pointer;transition:background .12s,color .12s;text-align:left}
+.sb-nav-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-nav-btn.active{background:rgba(255,87,81,.2);color:var(--coral)}
+.sb-nav-btn svg{flex:none}
+
+.sb-footer{padding:10px 8px;border-top:1px solid rgba(255,255,255,.1)}
+.sb-footer button{width:100%;display:flex;align-items:center;gap:8px;padding:9px 10px;background:none;border:none;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;border-radius:var(--r-sm);cursor:pointer;transition:background .12s,color .12s}
+.sb-footer button:hover{background:rgba(255,255,255,.08);color:#fff}
+
+/* ─── Main ─── */
+#main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.main-topbar{background:var(--white);border-bottom:1px solid var(--line);padding:0 28px;height:58px;display:flex;align-items:center;gap:14px;flex:none}
+.main-topbar h1{font-size:18px;font-weight:800;letter-spacing:-.3px}
+.main-topbar .csm-tag{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--coral-bg);color:var(--coral)}
+.main-topbar .spacer{flex:1}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.main-body{flex:1;overflow-y:auto;padding:24px 28px 48px}
+.main-body::-webkit-scrollbar{width:6px}
+.main-body::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+
+/* ─── Dashboard ─── */
+.dash-welcome{margin-bottom:24px}
+.dash-welcome h2{font-size:22px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px}
+.dash-welcome p{font-size:14px;color:var(--muted)}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+.kpi-card{background:var(--white);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);border-left:4px solid var(--coral)}
+.kpi-card.green{border-left-color:var(--green)}
+.kpi-card.blue{border-left-color:var(--blue)}
+.kpi-card.red{border-left-color:var(--red)}
+.kpi-label{font-size:11.5px;font-weight:700;color:var(--subtle);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.kpi-value{font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.kpi-sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px}
+.dash-section{background:var(--white);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow)}
+.dash-section h3{font-size:14px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.dash-section h3 span{flex:1}
+.dash-section h3 .badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--coral-bg);color:var(--coral)}
+
+/* Health breakdown */
+.health-bar{display:flex;height:8px;border-radius:99px;overflow:hidden;gap:2px;margin-bottom:10px}
+.health-bar-seg{height:100%;border-radius:99px}
+.health-legend{display:flex;gap:12px;flex-wrap:wrap}
+.h-leg{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--muted)}
+.h-dot{width:8px;height:8px;border-radius:50%;flex:none}
+
+/* CSM cards */
+.csm-list{display:flex;flex-direction:column;gap:10px}
+.csm-card{border:1.5px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;cursor:pointer;transition:border-color .12s,box-shadow .12s}
+.csm-card:hover{border-color:var(--coral-ll);box-shadow:0 2px 8px rgba(255,87,81,.08)}
+.csm-card-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.csm-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex:none}
+.csm-name{font-weight:700;font-size:14px}
+.csm-count{font-size:12px;color:var(--muted)}
+.csm-metrics{display:flex;gap:10px;flex-wrap:wrap}
+.csm-metric{font-size:12px;font-weight:600;color:var(--muted)}
+.csm-metric strong{color:var(--ink)}
+.csm-bar-wrap{height:4px;background:var(--line);border-radius:2px;margin-top:6px;overflow:hidden}
+.csm-bar-fill{height:100%;border-radius:2px;background:var(--green);transition:width .4s}
+.csm-bar-fill.warn{background:var(--coral)}
+.csm-bar-fill.bad{background:var(--red)}
+
+/* Risk list */
+.risk-list{display:flex;flex-direction:column;gap:8px}
+.risk-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-sm);border:1.5px solid var(--line);cursor:pointer;transition:border-color .12s}
+.risk-item:hover{border-color:var(--coral-ll)}
+.risk-avatar{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;flex:none}
+.risk-meta{flex:1;min-width:0}
+.risk-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.risk-why{font-size:11.5px;color:var(--muted)}
+.risk-pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.risk-pill.risco{background:rgba(200,31,42,.1);color:var(--red)}
+.risk-pill.atencao{background:rgba(255,121,116,.12);color:var(--coral)}
+
+/* Activity overview */
+.act-overview{display:flex;flex-direction:column;gap:6px}
+.act-ov-row{display:flex;align-items:center;gap:10px;font-size:13px}
+.act-ov-label{width:110px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
+.act-ov-bar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.act-ov-fill{height:100%;border-radius:3px;background:var(--green)}
+.act-ov-fill.warn{background:var(--coral)}
+.act-ov-fill.bad{background:var(--red)}
+.act-ov-pct{width:38px;text-align:right;font-weight:700;font-size:12px}
+
+/* ─── Empty state ─── */
+#emptyState{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--subtle)}
+#emptyState svg{opacity:.3;width:56px;height:56px;color:var(--coral)}
+#emptyState p{font-size:15px;font-weight:600}
+#emptyState small{font-size:13px;color:var(--subtle)}
+
+/* ─── Company header ─── */
+.co-header{background:var(--white);border-radius:var(--r);padding:20px 22px;margin-bottom:18px;box-shadow:var(--shadow);display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.co-header-avatar{width:52px;height:52px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#fff}
+.co-header-info{flex:1;min-width:0}
+.co-header-info h2{font-size:20px;font-weight:800;letter-spacing:-.3px}
+.co-header-meta{display:flex;gap:14px;flex-wrap:wrap;margin-top:5px}
+.meta-chip{font-size:12.5px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:4px}
+.meta-chip strong{color:var(--ink)}
+.co-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.health-pill{font-size:13px;font-weight:700;padding:6px 16px;border-radius:99px}
+.health-pill.saudavel{background:rgba(74,174,151,.12);color:var(--green)}
+.health-pill.atencao{background:rgba(255,121,116,.12);color:var(--coral)}
+.health-pill.risco{background:rgba(200,31,42,.1);color:var(--red)}
+.sin-display{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.sin-display.ok{color:var(--green)}
+.sin-display.warn{color:var(--coral)}
+.sin-display.bad{color:var(--red)}
+.sin-label{font-size:11px;font-weight:600;color:var(--subtle);text-align:right}
+
+/* ─── Stats row ─── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:18px}
+.stat-card{background:var(--white);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);border-top:3px solid var(--coral)}
+.stat-card .s-label{font-size:11.5px;font-weight:700;color:var(--subtle);margin-bottom:4px}
+.stat-card .s-value{font-size:22px;font-weight:800;letter-spacing:-.4px}
+.stat-card.red{border-top-color:var(--red)}
+.stat-card.green{border-top-color:var(--green)}
+
+/* ─── Tabs ─── */
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--line);margin-bottom:18px}
+.tab-btn{background:none;border:none;padding:10px 16px;font-size:13.5px;font-weight:700;color:var(--subtle);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;border-radius:var(--r-sm) var(--r-sm) 0 0}
+.tab-btn:hover{color:var(--ink);background:var(--bg)}
+.tab-btn.active{color:var(--coral);border-bottom-color:var(--coral)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ─── Activities ─── */
+.act-group{margin-bottom:22px}
+.act-group-title{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.act-group-title .g-icon{width:20px;height:20px;border-radius:5px;flex:none;display:flex;align-items:center;justify-content:center}
+.act-list{display:flex;flex-direction:column;gap:6px}
+.act-item{display:flex;align-items:flex-start;gap:11px;background:var(--white);border:1px solid var(--line);border-radius:var(--r-sm);padding:11px 14px;transition:border-color .12s,box-shadow .12s;cursor:pointer}
+.act-item:hover{border-color:var(--coral-ll);box-shadow:0 2px 8px rgba(255,87,81,.08)}
+.act-item.done{background:#fafafa}
+.act-item.done .act-name{text-decoration:line-through;color:var(--subtle)}
+.act-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;flex:none;margin-top:1px;transition:border-color .15s,background .15s;cursor:pointer;background:transparent}
+.act-item.done .act-check{background:var(--green);border-color:var(--green)}
+.act-item:hover .act-check{border-color:var(--coral)}
+.act-check svg{display:none;width:10px;height:10px;color:#fff}
+.act-item.done .act-check svg{display:block}
+.act-body{flex:1;min-width:0}
+.act-name{font-size:13.5px;font-weight:600;line-height:1.4}
+.act-meta{display:flex;gap:10px;margin-top:5px;flex-wrap:wrap;align-items:center}
+.act-freq{font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:99px;border:1.5px solid var(--line);color:var(--muted)}
+.act-date{font-size:11.5px;font-weight:600;color:var(--subtle)}
+.act-date.overdue{color:var(--red);font-weight:700}
+.act-note{font-size:12px;color:var(--muted);margin-top:4px;font-style:italic}
+.act-actions{display:flex;gap:4px;margin-left:auto;align-items:flex-start;padding-top:1px}
+.act-btn{background:none;border:none;padding:4px;border-radius:5px;color:var(--subtle);cursor:pointer;line-height:0;transition:color .12s,background .12s}
+.act-btn:hover{color:var(--coral);background:var(--coral-bg)}
+.act-btn.del:hover{color:var(--red);background:rgba(200,31,42,.08)}
+.act-btn svg{width:14px;height:14px}
+
+/* ─── Progress ring ─── */
+.progress-wrap{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.progress-ring-wrap{position:relative;width:48px;height:48px;flex:none}
+.progress-ring-wrap svg{transform:rotate(-90deg)}
+.progress-ring-bg{fill:none;stroke:var(--line);stroke-width:4}
+.progress-ring-fill{fill:none;stroke:var(--green);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .4s}
+.progress-ring-fill.warn{stroke:var(--coral)}
+.progress-ring-fill.bad{stroke:var(--red)}
+.progress-ring-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--ink)}
+.progress-info b{font-size:15px;font-weight:800}
+.progress-info span{font-size:12.5px;color:var(--muted);font-weight:500}
+
+/* ─── Notes ─── */
+.notes-area{width:100%;min-height:120px;border:1.5px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;font-size:13.5px;resize:vertical;outline:none;background:var(--white);transition:border-color .15s;line-height:1.6}
+.notes-area:focus{border-color:var(--coral)}
+.notes-save{margin-top:8px;background:var(--coral);color:#fff;border:none;padding:8px 20px;border-radius:var(--r-sm);font-weight:700;font-size:13px;cursor:pointer;transition:filter .15s}
+.notes-save:hover{filter:brightness(.93)}
+
+/* ─── Buttons ─── */
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:var(--r-sm);padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:filter .15s,background .15s;white-space:nowrap}
+.btn-primary{background:var(--coral);color:#fff}
+.btn-primary:hover{filter:brightness(.93)}
+.btn-ghost{background:#fff;color:var(--ink-2);border:1.5px solid var(--line)}
+.btn-ghost:hover{border-color:var(--coral);color:var(--coral)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn svg{width:15px;height:15px}
+.btn-danger{background:rgba(200,31,42,.09);color:var(--red);border:1.5px solid rgba(200,31,42,.2)}
+.btn-danger:hover{background:rgba(200,31,42,.15)}
+.btn-export{background:rgba(47,94,168,.09);color:var(--blue);border:1.5px solid rgba(47,94,168,.2)}
+.btn-export:hover{background:rgba(47,94,168,.15)}
+
+/* ─── Modal ─── */
+.modal-bg{position:fixed;inset:0;background:rgba(26,26,26,.5);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:100;overflow-y:auto;backdrop-filter:blur(3px)}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:460px;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.modal h3{font-size:17px;font-weight:800;margin-bottom:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+.field input,.field select,.field textarea{width:100%;border:1.5px solid var(--line);border-radius:var(--r-sm);padding:9px 11px;font-size:13.5px;outline:none;transition:border-color .15s;background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--coral)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:14px;border-top:1px solid var(--line)}
+
+/* ─── Team view ─── */
+.team-header{margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.team-header h2{font-size:20px;font-weight:800;flex:1}
+.team-co-list{display:flex;flex-direction:column;gap:10px}
+.team-co-item{background:var(--white);border-radius:var(--r);padding:14px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;cursor:pointer;transition:box-shadow .12s,transform .12s;border-left:4px solid var(--line)}
+.team-co-item:hover{box-shadow:0 4px 16px rgba(0,0,0,.1);transform:translateY(-1px)}
+.team-co-item.saudavel{border-left-color:var(--green)}
+.team-co-item.atencao{border-left-color:var(--coral)}
+.team-co-item.risco{border-left-color:var(--red)}
+.team-co-avatar{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff;flex:none}
+.team-co-info{flex:1;min-width:0}
+.team-co-name{font-size:14px;font-weight:700}
+.team-co-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.team-co-stats{display:flex;gap:14px;align-items:center}
+.team-co-stat{text-align:center}
+.team-co-stat-v{font-size:15px;font-weight:800}
+.team-co-stat-l{font-size:10.5px;color:var(--subtle);font-weight:600}
+.team-co-progress{width:70px}
+.mini-bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:3px}
+.mini-bar-fill{height:100%;border-radius:3px}
+
+/* ─── Toast ─── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink-2);color:#fff;font-size:13.5px;font-weight:600;padding:10px 20px;border-radius:99px;z-index:200;transition:transform .22s;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+input[type=checkbox]{accent-color:var(--green)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sb-header">
+    <div class="sb-brand">
+      <div class="sb-logo">S</div>
+      <div class="sb-brand-text">Sami CS <small>Painel operacional</small></div>
+    </div>
+    <div class="sb-search">
+      <svg class="sb-search-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Buscar empresa…" aria-label="Buscar empresa">
+    </div>
+    <div class="sb-filter">
+      <select id="filterCsm" aria-label="Filtrar por CSM">
+        <option value="">Todos os CSMs</option>
+      </select>
+      <select id="filterHealth" aria-label="Filtrar por saúde">
+        <option value="">Toda saúde</option>
+        <option value="risco">Risco</option>
+        <option value="atencao">Atenção</option>
+        <option value="saudavel">Saudável</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="sb-nav">
+    <button class="sb-nav-btn active" id="btnNavDash" onclick="showDashboard()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+  </div>
+
+  <div class="sb-section-label">Empresas</div>
+  <div id="companyList" role="list"></div>
+
+  <div class="sb-footer">
+    <button id="btnAddCo">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Adicionar empresa
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- Dashboard -->
+  <div id="dashView" style="display:flex;flex-direction:column;height:100%;overflow:hidden">
+    <div class="main-topbar">
+      <h1>Dashboard</h1>
+      <div class="spacer"></div>
+      <div class="topbar-actions">
+        <button class="btn btn-export btn-sm" id="btnExport">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar CSV
+        </button>
+      </div>
+    </div>
+    <div class="main-body" id="dashBody"></div>
+  </div>
+
+  <!-- Company View -->
+  <div id="coView" style="display:none;flex-direction:column;height:100%;overflow:hidden">
+    <div class="main-topbar" id="coTopbar">
+      <button class="btn btn-ghost btn-sm" onclick="showDashboard()" style="margin-right:4px">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        Voltar
+      </button>
+      <h1 id="coTopName"></h1>
+      <span class="csm-tag" id="coTopCsm"></span>
+      <div class="spacer"></div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" id="btnEditCo">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+          Editar
+        </button>
+        <button class="btn btn-danger btn-sm" id="btnDelCo">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Excluir
+        </button>
+      </div>
+    </div>
+    <div class="main-body" id="mainBody"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <h3 id="modalTitle">Empresa</h3>
+    <div id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ════════ DATA ════════ */
+const ATIVIDADES_BASE = [
+  {g:"Comunicação",  n:"Atendimento via WhatsApp",                             f:"Diário"},
+  {g:"Comunicação",  n:"Mensagem de acompanhamento no WhatsApp",               f:"Semanal"},
+  {g:"Comunicação",  n:"Percepção de sentimento do cliente",                   f:"Mensal"},
+  {g:"Comunicação",  n:"Plantão de dúvidas",                                   f:"Mensal"},
+  {g:"Membros",      n:"Apoio nas demandas de membros para priorização",       f:"Diário"},
+  {g:"Membros",      n:"Acompanhamento de tickets do Front e ações preventivas",f:"Semanal"},
+  {g:"Membros",      n:"Reposições de movimentações (inclusão/exclusão)",      f:"Quinzenal"},
+  {g:"Saúde",        n:"Report de sinistralidade e construção de planos de ação",f:"Mensal"},
+  {g:"Saúde",        n:"Acompanhamento de sinistralidade pós reajuste",        f:"Mensal"},
+  {g:"Saúde",        n:"Ações proativas de saúde (com participação do TdS)",   f:"Trimestral"},
+  {g:"Saúde",        n:"Plano de ação em prática para melhora de satisfação",  f:"Mensal"},
+  {g:"Educação",     n:"Ações educativas (com CRM)",                           f:"Mensal"},
+  {g:"Educação",     n:"Treinamento portal TISS - BKO",                        f:"Trimestral"},
+  {g:"Educação",     n:"Pesquisa NPS personalizada para 100% da base",         f:"Semestral"},
+  {g:"Relacionamento",n:"Visita de acompanhamento/relacionamento",             f:"Trimestral"},
+  {g:"Renovação",    n:"Acompanhamento da renovação",                          f:"Mensal"},
+  {g:"Onboarding",   n:"Onboarding com ativação clínica presencial",           f:"Único"},
+  {g:"Onboarding",   n:"Bate papo de onboarding",                             f:"Único"},
+  {g:"Onboarding",   n:"Onboarding",                                           f:"Único"},
+];
+
+const GRUPO_COLORS = {
+  "Comunicação":    "#2F5EA8",
+  "Membros":        "#FF5751",
+  "Saúde":          "#C81F2A",
+  "Educação":       "#4AAE97",
+  "Relacionamento": "#9A1820",
+  "Renovação":      "#FF7974",
+  "Onboarding":     "#333333",
+};
+
+const CSM_COLORS = ["#FF5751","#4AAE97","#2F5EA8","#C81F2A","#9A1820","#FF7974","#333333"];
+
+const SEED = [
+  {id:1,nome:"TechNova Sistemas",    csm:"Ana",   vidas:118,nps:7, sin:81,ultimo:"2026-05-31",notes:""},
+  {id:2,nome:"Logmar Transportes",   csm:"Bruno", vidas:204,nps:8, sin:69,ultimo:"2026-06-07",notes:""},
+  {id:3,nome:"MedPlus Clínicas",     csm:"Bruno", vidas:156,nps:5, sin:88,ultimo:"2026-05-28",notes:""},
+  {id:4,nome:"Grupo Vitalle Estética",csm:"Ana",  vidas:67, nps:6, sin:73,ultimo:"2026-06-03",notes:""},
+  {id:5,nome:"Bella Moda Confecções",csm:"Carla", vidas:73, nps:6, sin:79,ultimo:"2026-06-02",notes:""},
+  {id:6,nome:"Padaria Estrela do Sul",csm:"Ana",  vidas:42, nps:9, sin:58,ultimo:"2026-06-08",notes:""},
+  {id:7,nome:"DataFlow Analytics",   csm:"Carla", vidas:44, nps:9, sin:52,ultimo:"2026-06-08",notes:""},
+  {id:8,nome:"Café & Cia Franquias", csm:"Bruno", vidas:88, nps:9, sin:54,ultimo:"2026-06-09",notes:""},
+];
+
+const KEY="sami-cs-v3";
+function loadStore(){
+  try{ const r=localStorage.getItem(KEY); if(r) return JSON.parse(r); }catch(e){}
+  return {companies:JSON.parse(JSON.stringify(SEED)), activities:{}};
+}
+function saveStore(){ try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){} }
+
+let store = loadStore();
+let activeId = null;
+let currentView = "dashboard"; // "dashboard" | "company"
+
+function ensureActs(id){
+  if(!store.activities[id]){
+    store.activities[id]=ATIVIDADES_BASE.map((a,i)=>({id:i+1,g:a.g,n:a.n,f:a.f,done:false,lastDone:"",note:""}));
+    saveStore();
+  }
+}
+
+/* ════════ UTILS ════════ */
+const $  = s=>document.querySelector(s);
+const $$ = s=>document.querySelectorAll(s);
+const esc= s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtBR = d=>{ if(!d) return "—"; const [y,m,dd]=d.split("-"); return dd+"/"+m+"/"+y; };
+const today = ()=>new Date().toISOString().slice(0,10);
+function diasDesde(d){ if(!d) return 999; return Math.max(0,Math.round((new Date(today())-new Date(d))/86400000)); }
+function nextCoId(){ return store.companies.reduce((m,c)=>Math.max(m,c.id),0)+1; }
+function nextActId(id){ const a=store.activities[id]||[]; return a.reduce((m,x)=>Math.max(m,x.id),0)+1; }
+
+function avatarColor(name){
+  const colors=["#FF5751","#C81F2A","#4AAE97","#2F5EA8","#9A1820","#FF7974","#555555"];
+  let h=0; for(const c of name) h=(h*31+c.charCodeAt(0))&0xffffffff;
+  return colors[Math.abs(h)%colors.length];
+}
+function csmColor(name){
+  let h=0; for(const c of name) h=(h*31+c.charCodeAt(0))&0xffffffff;
+  return CSM_COLORS[Math.abs(h)%CSM_COLORS.length];
+}
+function avatarInitials(n){ return n.trim().split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase(); }
+
+function healthOf(c){
+  if(c.sin>75||c.nps<=5||diasDesde(c.ultimo)>=14) return "risco";
+  if(c.sin>=65||c.nps<=7||diasDesde(c.ultimo)>=7)  return "atencao";
+  return "saudavel";
+}
+function healthLabel(h){ return {saudavel:"Saudável",atencao:"Atenção",risco:"Risco"}[h]; }
+function freqDays(f){ return {Diário:1,Semanal:7,Quinzenal:15,Mensal:30,Trimestral:90,Semestral:180,Único:9999}[f]||30; }
+
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),2200);
+}
+
+function getCsms(){ return [...new Set(store.companies.map(c=>c.csm).filter(Boolean))].sort(); }
+
+function actProgress(id){
+  ensureActs(id);
+  const acts=store.activities[id]||[];
+  const done=acts.filter(a=>a.done).length;
+  return {done, total:acts.length, pct:acts.length?Math.round(done/acts.length*100):0};
+}
+
+/* ════════ FILTER STATE ════════ */
+function getFilteredCos(){
+  const q=($("#searchInput").value||"").toLowerCase();
+  const csm=$("#filterCsm").value;
+  const health=$("#filterHealth").value;
+  return [...store.companies]
+    .sort((a,b)=>a.nome.localeCompare(b.nome))
+    .filter(c=>{
+      if(q && !c.nome.toLowerCase().includes(q) && !(c.csm||"").toLowerCase().includes(q)) return false;
+      if(csm && c.csm!==csm) return false;
+      if(health && healthOf(c)!==health) return false;
+      return true;
+    });
+}
+
+/* ════════ SIDEBAR ════════ */
+function refreshCsmFilter(){
+  const sel=$("#filterCsm");
+  const val=sel.value;
+  sel.innerHTML='<option value="">Todos os CSMs</option>';
+  getCsms().forEach(c=>{ const o=document.createElement("option"); o.value=c; o.textContent=c; sel.appendChild(o); });
+  sel.value=val;
+}
+
+function renderSidebar(){
+  refreshCsmFilter();
+  const list=$("#companyList");
+  list.innerHTML="";
+  const cos=getFilteredCos();
+  if(!cos.length){
+    list.innerHTML='<div style="padding:16px;color:rgba(255,255,255,.35);font-size:13px;text-align:center">Nenhuma empresa encontrada</div>';
+    return;
+  }
+  cos.forEach(c=>{
+    const h=healthOf(c);
+    const badgeCls=h==="risco"?"bad":h==="atencao"?"warn":"ok";
+    const prog=actProgress(c.id);
+    const div=document.createElement("div");
+    div.className="co-item"+(c.id===activeId?" active":"");
+    div.setAttribute("role","listitem");
+    div.innerHTML=`
+      <div class="co-avatar" style="background:${avatarColor(c.nome)}">${esc(avatarInitials(c.nome))}</div>
+      <div class="co-meta">
+        <div class="co-name">${esc(c.nome)}</div>
+        <div class="co-sub">${esc(c.csm||"—")} · ${c.vidas} vidas</div>
+      </div>
+      <span class="co-badge ${badgeCls}">${healthLabel(h)}</span>
+    `;
+    div.addEventListener("click",()=>selectCo(c.id));
+    list.appendChild(div);
+  });
+}
+
+["searchInput","filterCsm","filterHealth"].forEach(id=>
+  document.getElementById(id).addEventListener("input",()=>renderSidebar())
+);
+
+/* ════════ NAVIGATION ════════ */
+function showDashboard(){
+  currentView="dashboard";
+  activeId=null;
+  $("#dashView").style.display="flex";
+  $("#coView").style.display="none";
+  $("#btnNavDash").classList.add("active");
+  renderSidebar();
+  renderDashboard();
+}
+
+function selectCo(id){
+  currentView="company";
+  activeId=id;
+  ensureActs(id);
+  $("#dashView").style.display="none";
+  $("#coView").style.display="flex";
+  $("#btnNavDash").classList.remove("active");
+  renderSidebar();
+  renderProfile(id);
+}
+
+/* ════════ DASHBOARD ════════ */
+function renderDashboard(){
+  const cos=store.companies;
+  const total=cos.length;
+  const saudavel=cos.filter(c=>healthOf(c)==="saudavel").length;
+  const atencao=cos.filter(c=>healthOf(c)==="atencao").length;
+  const risco=cos.filter(c=>healthOf(c)==="risco").length;
+  const totalVidas=cos.reduce((s,c)=>s+c.vidas,0);
+  const avgNps=total?Math.round(cos.reduce((s,c)=>s+c.nps,0)/total*10)/10:0;
+
+  // Overall act progress
+  let allDone=0, allTotal=0;
+  cos.forEach(c=>{ const p=actProgress(c.id); allDone+=p.done; allTotal+=p.total; });
+  const overallPct=allTotal?Math.round(allDone/allTotal*100):0;
+
+  // Health bar widths
+  const hw=n=>total?Math.round(n/total*100):0;
+
+  // CSM stats
+  const csms=getCsms();
+  const csmStats=csms.map(csm=>{
+    const myCos=cos.filter(c=>c.csm===csm);
+    const myRisco=myCos.filter(c=>healthOf(c)==="risco").length;
+    const myAtencao=myCos.filter(c=>healthOf(c)==="atencao").length;
+    let done=0,tot=0;
+    myCos.forEach(c=>{ const p=actProgress(c.id); done+=p.done; tot+=p.total; });
+    const pct=tot?Math.round(done/tot*100):0;
+    return {csm,count:myCos.length,risco:myRisco,atencao:myAtencao,done,total:tot,pct,vidas:myCos.reduce((s,c)=>s+c.vidas,0)};
+  });
+
+  // Risk companies
+  const riskCos=cos.filter(c=>healthOf(c)!=="saudavel").sort((a,b)=>{
+    const o={risco:0,atencao:1};
+    return o[healthOf(a)]-o[healthOf(b)];
+  }).slice(0,8);
+
+  // Act progress per company
+  const coProgress=cos.map(c=>({c,p:actProgress(c.id)})).sort((a,b)=>a.p.pct-b.p.pct).slice(0,8);
+
+  const todayStr=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+
+  let html=`
+  <div class="dash-welcome">
+    <h2>Visão geral da equipe</h2>
+    <p>${todayStr}</p>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Total de empresas</div>
+      <div class="kpi-value">${total}</div>
+      <div class="kpi-sub">${totalVidas.toLocaleString("pt-BR")} vidas no total</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Em risco</div>
+      <div class="kpi-value" style="color:var(--red)">${risco}</div>
+      <div class="kpi-sub">${atencao} em atenção</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Saudáveis</div>
+      <div class="kpi-value" style="color:var(--green)">${saudavel}</div>
+      <div class="kpi-sub">${hw(saudavel)}% da carteira</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">NPS médio</div>
+      <div class="kpi-value" style="color:var(--blue)">${avgNps}</div>
+      <div class="kpi-sub">Média da carteira</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Progresso atividades</div>
+      <div class="kpi-value">${overallPct}%</div>
+      <div class="kpi-sub">${allDone} de ${allTotal} concluídas</div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <!-- Saúde da carteira -->
+    <div class="dash-section">
+      <h3><span>Saúde da carteira</span></h3>
+      <div class="health-bar" style="margin-bottom:12px">
+        <div class="health-bar-seg" style="width:${hw(risco)}%;background:var(--red)"></div>
+        <div class="health-bar-seg" style="width:${hw(atencao)}%;background:var(--coral)"></div>
+        <div class="health-bar-seg" style="width:${hw(saudavel)}%;background:var(--green)"></div>
+      </div>
+      <div class="health-legend">
+        <div class="h-leg"><div class="h-dot" style="background:var(--red)"></div>Risco <strong style="margin-left:3px;color:var(--ink)">${risco}</strong></div>
+        <div class="h-leg"><div class="h-dot" style="background:var(--coral)"></div>Atenção <strong style="margin-left:3px;color:var(--ink)">${atencao}</strong></div>
+        <div class="h-leg"><div class="h-dot" style="background:var(--green)"></div>Saudável <strong style="margin-left:3px;color:var(--ink)">${saudavel}</strong></div>
+      </div>
+      <div style="margin-top:18px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Progresso por empresa</div>
+        <div class="act-overview">
+          ${coProgress.map(({c,p})=>{
+            const cls=p.pct<50?"bad":p.pct<80?"warn":"";
+            return `<div class="act-ov-row" style="cursor:pointer" onclick="selectCo(${c.id})">
+              <div class="act-ov-label" title="${esc(c.nome)}">${esc(c.nome)}</div>
+              <div class="act-ov-bar"><div class="act-ov-fill ${cls}" style="width:${p.pct}%"></div></div>
+              <div class="act-ov-pct" style="color:${p.pct<50?"var(--red)":p.pct<80?"var(--coral)":"var(--green)"}">${p.pct}%</div>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>
+    </div>
+
+    <!-- CSM Performance -->
+    <div class="dash-section">
+      <h3><span>Performance por CSM</span></h3>
+      <div class="csm-list">
+        ${csmStats.map(s=>{
+          const barCls=s.pct<50?"bad":s.pct<80?"warn":"";
+          return `<div class="csm-card" onclick="document.getElementById('filterCsm').value='${esc(s.csm)}';renderSidebar();showDashboard()">
+            <div class="csm-card-top">
+              <div class="csm-avatar" style="background:${csmColor(s.csm)}">${esc(avatarInitials(s.csm))}</div>
+              <div>
+                <div class="csm-name">${esc(s.csm)}</div>
+                <div class="csm-count">${s.count} empresa${s.count!==1?"s":""} · ${s.vidas.toLocaleString("pt-BR")} vidas</div>
+              </div>
+              <div style="margin-left:auto;text-align:right">
+                <div style="font-size:18px;font-weight:800;color:${s.pct<50?"var(--red)":s.pct<80?"var(--coral)":"var(--green)"}">${s.pct}%</div>
+                <div style="font-size:11px;color:var(--subtle)">progresso</div>
+              </div>
+            </div>
+            <div class="csm-metrics">
+              ${s.risco>0?`<div class="csm-metric"><span style="color:var(--red);font-weight:800">${s.risco}</span> em risco</div>`:""}
+              ${s.atencao>0?`<div class="csm-metric"><span style="color:var(--coral);font-weight:800">${s.atencao}</span> em atenção</div>`:""}
+              <div class="csm-metric"><strong>${s.done}</strong>/${s.total} atividades</div>
+            </div>
+            <div class="csm-bar-wrap"><div class="csm-bar-fill ${barCls}" style="width:${s.pct}%"></div></div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+  </div>
+
+  <!-- Empresas que precisam de atenção -->
+  ${riskCos.length?`
+  <div class="dash-section" style="margin-bottom:18px">
+    <h3><span>Empresas que precisam de atenção</span> <span class="badge">${riskCos.length}</span></h3>
+    <div class="risk-list">
+      ${riskCos.map(c=>{
+        const h=healthOf(c);
+        const reasons=[];
+        if(c.sin>75) reasons.push(`Sin ${c.sin}%`);
+        if(c.nps<=5) reasons.push(`NPS ${c.nps}`);
+        if(diasDesde(c.ultimo)>=14) reasons.push(`${diasDesde(c.ultimo)}d sem contato`);
+        else if(diasDesde(c.ultimo)>=7) reasons.push(`${diasDesde(c.ultimo)}d sem contato`);
+        if(c.nps<=7 && c.nps>5) reasons.push(`NPS ${c.nps}`);
+        if(c.sin>=65 && c.sin<=75) reasons.push(`Sin ${c.sin}%`);
+        const uniq=[...new Set(reasons)].slice(0,3);
+        return `<div class="risk-item" onclick="selectCo(${c.id})">
+          <div class="risk-avatar" style="background:${avatarColor(c.nome)}">${esc(avatarInitials(c.nome))}</div>
+          <div class="risk-meta">
+            <div class="risk-name">${esc(c.nome)}</div>
+            <div class="risk-why">CSM: ${esc(c.csm||"—")} · ${uniq.join(" · ")}</div>
+          </div>
+          <span class="risk-pill ${h}">${healthLabel(h)}</span>
+        </div>`;
+      }).join("")}
+    </div>
+  </div>`:""}
+  `;
+
+  $("#dashBody").innerHTML=html;
+}
+
+/* ════════ PROFILE ════════ */
+function renderProfile(id){
+  const c=store.companies.find(x=>x.id===id);
+  if(!c) return;
+  const h=healthOf(c);
+  const acts=store.activities[id]||[];
+  const done=acts.filter(a=>a.done).length;
+  const total=acts.length;
+  const pct=total?Math.round(done/total*100):0;
+  const sinCls=c.sin>75?"bad":c.sin>=65?"warn":"ok";
+  const color=avatarColor(c.nome);
+
+  $("#coTopName").textContent=c.nome;
+  $("#coTopCsm").textContent="CSM: "+(c.csm||"—");
+
+  const groups={};
+  acts.forEach(a=>{ if(!groups[a.g]) groups[a.g]=[]; groups[a.g].push(a); });
+
+  const R=18, C=2*Math.PI*R;
+  const offset=C-(pct/100)*C;
+
+  let html=`
+  <div class="co-header">
+    <div class="co-header-avatar" style="background:${color}">${esc(avatarInitials(c.nome))}</div>
+    <div class="co-header-info">
+      <h2>${esc(c.nome)}</h2>
+      <div class="co-header-meta">
+        <span class="meta-chip"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> CSM: <strong>${esc(c.csm||"—")}</strong></span>
+        <span class="meta-chip"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> <strong>${c.vidas}</strong> vidas</span>
+        <span class="meta-chip"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Últ. contato: <strong>${fmtBR(c.ultimo)}</strong> (há ${diasDesde(c.ultimo)}d)</span>
+        <span class="meta-chip">NPS: <strong>${c.nps}</strong></span>
+      </div>
+    </div>
+    <div class="co-header-right">
+      <span class="health-pill ${h}">${healthLabel(h)}</span>
+      <div>
+        <div class="sin-display ${sinCls}">${c.sin}%</div>
+        <div class="sin-label">sinistralidade</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="s-label">Atividades concluídas</div><div class="s-value">${done}/${total}</div></div>
+    <div class="stat-card green"><div class="s-label">Progresso geral</div><div class="s-value">${pct}%</div></div>
+    <div class="stat-card ${c.sin>75?"red":""}"><div class="s-label">Sinistralidade</div><div class="s-value">${c.sin}%</div></div>
+    <div class="stat-card"><div class="s-label">NPS</div><div class="s-value">${c.nps}</div></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-ring-wrap">
+      <svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true">
+        <circle class="progress-ring-bg" cx="24" cy="24" r="${R}"/>
+        <circle class="progress-ring-fill ${pct<50?"bad":pct<80?"warn":""}" cx="24" cy="24" r="${R}"
+          stroke-dasharray="${C}" stroke-dashoffset="${offset}"/>
+      </svg>
+      <div class="progress-ring-text">${pct}%</div>
+    </div>
+    <div class="progress-info"><b>${done} de ${total} atividades</b><span> concluídas</span></div>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" id="btnResetActs">↺ Reiniciar progresso</button>
+      <button class="btn btn-primary btn-sm" id="btnAddAct">+ Atividade</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="atividades">Atividades</button>
+    <button class="tab-btn" data-tab="notas">Notas</button>
+  </div>
+
+  <div class="tab-pane active" id="pane-atividades">
+  `;
+
+  const ORDEM=["Comunicação","Membros","Saúde","Educação","Relacionamento","Renovação","Onboarding"];
+  ORDEM.forEach(g=>{
+    const list=groups[g];
+    if(!list||!list.length) return;
+    const gColor=GRUPO_COLORS[g]||"#999";
+    html+=`<div class="act-group">
+      <div class="act-group-title">
+        <div class="g-icon" style="background:${gColor}20">${groupIcon(g)}</div>
+        ${esc(g)}
+      </div>
+      <div class="act-list" data-group="${esc(g)}">`;
+    list.forEach(a=>{
+      const overdue=a.lastDone && diasDesde(a.lastDone)>freqDays(a.f);
+      html+=`<div class="act-item${a.done?" done":""}" data-aid="${a.id}">
+        <div class="act-check" role="checkbox" aria-checked="${a.done}" aria-label="${esc(a.n)}" tabindex="0">
+          <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="act-body">
+          <div class="act-name">${esc(a.n)}</div>
+          <div class="act-meta">
+            <span class="act-freq">${esc(a.f)}</span>
+            ${a.lastDone?`<span class="act-date${overdue?" overdue":""}">Última: ${fmtBR(a.lastDone)}${overdue?" · atrasada":""}</span>`:""}
+          </div>
+          ${a.note?`<div class="act-note">${esc(a.note)}</div>`:""}
+        </div>
+        <div class="act-actions">
+          <button class="act-btn" data-action="note" data-aid="${a.id}" title="Observação" aria-label="Observação">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </button>
+          <button class="act-btn del" data-action="del" data-aid="${a.id}" title="Excluir" aria-label="Excluir">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
+        </div>
+      </div>`;
+    });
+    html+="</div></div>";
+  });
+
+  const extra=acts.filter(a=>!ORDEM.includes(a.g));
+  if(extra.length){
+    html+=`<div class="act-group"><div class="act-group-title">Outros</div><div class="act-list">`;
+    extra.forEach(a=>{
+      html+=`<div class="act-item${a.done?" done":""}" data-aid="${a.id}">
+        <div class="act-check" role="checkbox" aria-checked="${a.done}" tabindex="0">
+          <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="act-body"><div class="act-name">${esc(a.n)}</div></div>
+        <div class="act-actions">
+          <button class="act-btn del" data-action="del" data-aid="${a.id}" aria-label="Excluir">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
+        </div>
+      </div>`;
+    });
+    html+="</div></div>";
+  }
+
+  html+=`</div>
+  <div class="tab-pane" id="pane-notas">
+    <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Anotações livres sobre a conta.</p>
+    <textarea class="notes-area" id="coNotes" placeholder="Registre observações, contexto de reuniões, riscos identificados…">${esc(c.notes||"")}</textarea>
+    <button class="notes-save" id="btnSaveNotes">Salvar notas</button>
+  </div>`;
+
+  $("#mainBody").innerHTML=html;
+  bindProfileEvents(id);
+}
+
+function groupIcon(g){
+  const icons={
+    "Comunicação":`<svg width="12" height="12" fill="none" stroke="${GRUPO_COLORS[g]}" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+    "Membros":`<svg width="12" height="12" fill="none" stroke="${GRUPO_COLORS[g]}" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+    "Saúde":`<svg width="12" height="12" fill="none" stroke="${GRUPO_COLORS[g]}" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`,
+    "Educação":`<svg width="12" height="12" fill="none" stroke="${GRUPO_COLORS[g]}" stroke-width="2" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+    "Relacionamento":`<svg width="12" height="12" fill="none" stroke="${GRUPO_COLORS[g]}" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+    "Renovação":`<svg width="12" height="12" fill="none" stroke="${GRUPO_COLORS[g]}" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`,
+    "Onboarding":`<svg width="12" height="12" fill="none" stroke="${GRUPO_COLORS[g]}" stroke-width="2" viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>`,
+  };
+  return icons[g]||"";
+}
+
+/* ════════ PROFILE EVENTS ════════ */
+function bindProfileEvents(id){
+  $$(".tab-btn").forEach(b=>{
+    b.addEventListener("click",()=>{
+      $$(".tab-btn").forEach(x=>x.classList.remove("active"));
+      $$(".tab-pane").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      const p=document.getElementById("pane-"+b.dataset.tab);
+      if(p) p.classList.add("active");
+    });
+  });
+
+  $$(".act-item").forEach(item=>{
+    const check=item.querySelector(".act-check");
+    function toggle(e){
+      if(e.target.closest(".act-btn")) return;
+      const aid=+item.dataset.aid;
+      const acts=store.activities[id];
+      const a=acts.find(x=>x.id===aid);
+      if(!a) return;
+      a.done=!a.done;
+      if(a.done) a.lastDone=today();
+      saveStore(); renderProfile(id); renderSidebar();
+    }
+    item.addEventListener("click",toggle);
+    check.addEventListener("keydown",e=>{ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); toggle(e); }});
+  });
+
+  $$(".act-btn").forEach(btn=>{
+    btn.addEventListener("click",e=>{
+      e.stopPropagation();
+      const aid=+btn.dataset.aid;
+      const acts=store.activities[id];
+      const a=acts.find(x=>x.id===aid);
+      if(!a) return;
+      if(btn.dataset.action==="del"){
+        if(!confirm("Excluir esta atividade da conta?")) return;
+        store.activities[id]=acts.filter(x=>x.id!==aid);
+        saveStore(); renderProfile(id); toast("Atividade removida");
+      } else if(btn.dataset.action==="note"){
+        openNoteModal(id,aid);
+      }
+    });
+  });
+
+  $("#btnResetActs").addEventListener("click",()=>{
+    if(!confirm("Reiniciar todo o progresso das atividades desta empresa?")) return;
+    store.activities[id].forEach(a=>{ a.done=false; a.lastDone=""; });
+    saveStore(); renderProfile(id); toast("Progresso reiniciado");
+  });
+
+  $("#btnAddAct").addEventListener("click",()=>openAddActModal(id));
+  $("#btnEditCo").addEventListener("click",()=>openEditCoModal(id));
+  $("#btnDelCo").addEventListener("click",()=>{
+    const c=store.companies.find(x=>x.id===id);
+    if(!confirm(`Excluir "${c.nome}"? Esta ação não pode ser desfeita.`)) return;
+    store.companies=store.companies.filter(x=>x.id!==id);
+    delete store.activities[id];
+    saveStore(); showDashboard(); toast("Empresa excluída");
+  });
+
+  const notesBtn=$("#btnSaveNotes");
+  if(notesBtn){
+    notesBtn.addEventListener("click",()=>{
+      const c=store.companies.find(x=>x.id===id);
+      c.notes=$("#coNotes").value;
+      saveStore(); toast("Notas salvas");
+    });
+  }
+}
+
+/* ════════ MODALS ════════ */
+function openModal(title,bodyHtml,actions){
+  $("#modalTitle").textContent=title;
+  $("#modalBody").innerHTML=bodyHtml;
+  $("#modalActions").innerHTML="";
+  actions.forEach(a=>{
+    const b=document.createElement("button");
+    b.className="btn "+(a.cls||"btn-ghost");
+    b.textContent=a.label;
+    b.addEventListener("click",a.fn);
+    $("#modalActions").appendChild(b);
+  });
+  $("#modalBg").classList.add("open");
+  const first=$("#modalBody").querySelector("input,select,textarea");
+  if(first) setTimeout(()=>first.focus(),50);
+}
+function closeModal(){ $("#modalBg").classList.remove("open"); }
+$("#modalBg").addEventListener("click",e=>{ if(e.target.id==="modalBg") closeModal(); });
+
+function openAddCoModal(){
+  const csms=getCsms();
+  openModal("Nova empresa",`
+    <div class="field"><label>Nome da empresa</label><input id="f-nome" type="text" placeholder="Ex: Empresa XYZ Ltda"></div>
+    <div class="field-row">
+      <div class="field"><label>CSM responsável</label>
+        <input id="f-csm" type="text" placeholder="Nome do CSM" list="csm-list">
+        <datalist id="csm-list">${csms.map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
+      </div>
+      <div class="field"><label>Vidas</label><input id="f-vidas" type="number" min="1" value="50"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>NPS (0-10)</label><input id="f-nps" type="number" min="0" max="10" value="8"></div>
+      <div class="field"><label>Sinistralidade (%)</label><input id="f-sin" type="number" min="0" max="200" value="65"></div>
+    </div>
+    <div class="field"><label>Último contato</label><input id="f-ultimo" type="date" value="${today()}"></div>
+  `,[
+    {label:"Cancelar",cls:"btn-ghost",fn:closeModal},
+    {label:"Adicionar empresa",cls:"btn-primary",fn:()=>{
+      const nome=$("#f-nome").value.trim();
+      if(!nome){ alert("Nome obrigatório"); return; }
+      const co={id:nextCoId(),nome,csm:$("#f-csm").value.trim(),vidas:+$("#f-vidas").value||0,nps:+$("#f-nps").value||0,sin:+$("#f-sin").value||0,ultimo:$("#f-ultimo").value,notes:""};
+      store.companies.push(co);
+      saveStore(); closeModal(); renderSidebar(); selectCo(co.id); toast("Empresa adicionada");
+    }}
+  ]);
+}
+
+function openEditCoModal(id){
+  const c=store.companies.find(x=>x.id===id);
+  const csms=getCsms();
+  openModal("Editar empresa",`
+    <div class="field"><label>Nome da empresa</label><input id="f-nome" type="text" value="${esc(c.nome)}"></div>
+    <div class="field-row">
+      <div class="field"><label>CSM responsável</label>
+        <input id="f-csm" type="text" value="${esc(c.csm||"")}" list="csm-list2">
+        <datalist id="csm-list2">${csms.map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
+      </div>
+      <div class="field"><label>Vidas</label><input id="f-vidas" type="number" min="1" value="${c.vidas}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>NPS (0-10)</label><input id="f-nps" type="number" min="0" max="10" value="${c.nps}"></div>
+      <div class="field"><label>Sinistralidade (%)</label><input id="f-sin" type="number" min="0" max="200" value="${c.sin}"></div>
+    </div>
+    <div class="field"><label>Último contato</label><input id="f-ultimo" type="date" value="${c.ultimo||""}"></div>
+  `,[
+    {label:"Cancelar",cls:"btn-ghost",fn:closeModal},
+    {label:"Salvar alterações",cls:"btn-primary",fn:()=>{
+      const nome=$("#f-nome").value.trim();
+      if(!nome){ alert("Nome obrigatório"); return; }
+      c.nome=nome; c.csm=$("#f-csm").value.trim();
+      c.vidas=+$("#f-vidas").value||0; c.nps=+$("#f-nps").value||0;
+      c.sin=+$("#f-sin").value||0; c.ultimo=$("#f-ultimo").value;
+      saveStore(); closeModal(); renderSidebar(); renderProfile(id); toast("Dados atualizados");
+    }}
+  ]);
+}
+
+function openAddActModal(id){
+  const grupos=Object.keys(GRUPO_COLORS);
+  openModal("Nova atividade",`
+    <div class="field"><label>Nome da atividade</label><input id="f-an" type="text" placeholder="Ex: Reunião de revisão mensal"></div>
+    <div class="field-row">
+      <div class="field"><label>Grupo</label>
+        <select id="f-ag">${grupos.map(g=>`<option>${esc(g)}</option>`).join("")}<option>Outros</option></select>
+      </div>
+      <div class="field"><label>Frequência</label>
+        <select id="f-af">
+          <option>Diário</option><option>Semanal</option><option>Quinzenal</option>
+          <option selected>Mensal</option><option>Trimestral</option><option>Semestral</option><option>Único</option>
+        </select>
+      </div>
+    </div>
+  `,[
+    {label:"Cancelar",cls:"btn-ghost",fn:closeModal},
+    {label:"Adicionar",cls:"btn-primary",fn:()=>{
+      const n=$("#f-an").value.trim();
+      if(!n){ alert("Nome obrigatório"); return; }
+      const a={id:nextActId(id),g:$("#f-ag").value,n,f:$("#f-af").value,done:false,lastDone:"",note:""};
+      store.activities[id].push(a);
+      saveStore(); closeModal(); renderProfile(id); toast("Atividade adicionada");
+    }}
+  ]);
+}
+
+function openNoteModal(id,aid){
+  const a=store.activities[id].find(x=>x.id===aid);
+  openModal("Observação — "+a.n,`
+    <div class="field"><label>Observação</label>
+      <textarea id="f-note" style="min-height:100px">${esc(a.note||"")}</textarea>
+    </div>
+    <div class="field"><label>Última realização</label>
+      <input id="f-lastdone" type="date" value="${a.lastDone||""}">
+    </div>
+  `,[
+    {label:"Cancelar",cls:"btn-ghost",fn:closeModal},
+    {label:"Salvar",cls:"btn-primary",fn:()=>{
+      a.note=$("#f-note").value.trim();
+      a.lastDone=$("#f-lastdone").value||a.lastDone;
+      saveStore(); closeModal(); renderProfile(id); toast("Observação salva");
+    }}
+  ]);
+}
+
+/* ════════ EXPORT CSV ════════ */
+function exportCsv(){
+  const rows=[["Empresa","CSM","Vidas","NPS","Sinistralidade (%)","Último Contato","Dias Sem Contato","Saúde","Atividades Concluídas","Total Atividades","Progresso (%)"]];
+  store.companies.forEach(c=>{
+    const p=actProgress(c.id);
+    rows.push([c.nome,c.csm||"",c.vidas,c.nps,c.sin,c.ultimo||"",diasDesde(c.ultimo),healthLabel(healthOf(c)),p.done,p.total,p.pct]);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const a=document.createElement("a");
+  a.href="data:text/csv;charset=utf-8,﻿"+encodeURIComponent(csv);
+  a.download=`sami-cs-${today()}.csv`;
+  a.click();
+  toast("CSV exportado com sucesso");
+}
+
+/* ════════ INIT ════════ */
+$("#btnAddCo").addEventListener("click",openAddCoModal);
+$("#btnExport").addEventListener("click",exportCsv);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+
+renderSidebar();
+renderDashboard();
+</script>
+</body>
+</html>
